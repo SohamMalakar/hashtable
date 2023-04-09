@@ -121,6 +121,7 @@ void free_hashtable(Hashtable *ht)
 
     ht->capacity = 0;
     ht->count = 0;
+    ht->deleted = 0;
     ht->c1 = ht->c2 = 1;
 
     free(ht);
