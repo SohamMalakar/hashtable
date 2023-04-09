@@ -21,7 +21,6 @@ struct _Hashtable
 {
     uint64_t count;
     uint64_t capacity;
-    uint64_t c1, c2; // quadratic probing
     uint64_t deleted;
     Entry **entries;
 };
@@ -91,7 +90,6 @@ Hashtable *init_hashtable(uint64_t capacity)
 
     ht->count = 0;
     ht->deleted = 0;
-    ht->c1 = ht->c2 = 1;
     ht->capacity = capacity;
 
     ht->entries = calloc(sizeof(void *), capacity);
@@ -122,7 +120,6 @@ void free_hashtable(Hashtable *ht)
     ht->capacity = 0;
     ht->count = 0;
     ht->deleted = 0;
-    ht->c1 = ht->c2 = 1;
 
     free(ht);
 }
@@ -131,16 +128,6 @@ static void hashtable_resize(Hashtable *ht, uint64_t *capacity, float multiplier
 {
     uint64_t new_capacity = *capacity * multiplier;
     Hashtable *new_ht = init_hashtable(new_capacity);
-
-    // compute the new constants for quadratic probing
-    uint64_t tmp;
-
-    while (ht->c2 < *capacity)
-    {
-        tmp = ht->c1;
-        ht->c1 = ht->c2;
-        ht->c2 = tmp + ht->c2;
-    }
 
     for (uint64_t i = 0; i < *capacity; i++)
         if (ht->entries[i] != NULL && ht->entries[i] != DELETED)
@@ -157,6 +144,13 @@ static void hashtable_resize(Hashtable *ht, uint64_t *capacity, float multiplier
     free(new_ht);
 }
 
+uint64_t q_probing(uint64_t x)
+{
+    // quadratic probing function
+    // P(x) = (x^2 + x) / 2
+    return (x * x + x) >> 1;
+}
+
 bool hashtable_insert(Entry *object, Hashtable *ht)
 {
     uint64_t capacity = ht->capacity;
@@ -167,13 +161,10 @@ bool hashtable_insert(Entry *object, Hashtable *ht)
     if (ht->count > capacity * TABLE_MAX_LOAD)
         hashtable_resize(ht, &capacity, GROWTH_FACTOR);
 
-    uint64_t c1 = ht->c1;
-    uint64_t c2 = ht->c2;
-
     // quadratic probing
     for (uint64_t i = 0; i < capacity; i++)
     {
-        tmp = (index + c1 * i + c2 * i * i) % capacity;
+        tmp = (index + q_probing(i)) % capacity;
 
         if (ht->entries[tmp] == NULL || ht->entries[tmp] == DELETED)
         {
@@ -207,12 +198,9 @@ Entry *hashtable_delete(const char *key, Hashtable *ht)
     if (ht->deleted * 2 > ht->capacity)
         hashtable_resize(ht, &capacity, SHRINK_FACTOR);
 
-    uint64_t c1 = ht->c1;
-    uint64_t c2 = ht->c2;
-
     for (uint64_t i = 0; i < capacity; i++)
     {
-        tmp = (index + c1 * i + c2 * i * i) % capacity;
+        tmp = (index + q_probing(i)) % capacity;
 
         if (ht->entries[tmp] == NULL)
         {
@@ -236,12 +224,9 @@ Entry *hashtable_lookup(const char *key, Hashtable *ht)
     uint64_t index = hash(key, capacity);
     uint64_t tmp;
 
-    uint64_t c1 = ht->c1;
-    uint64_t c2 = ht->c2;
-
     for (uint64_t i = 0; i < capacity; i++)
     {
-        tmp = (index + c1 * i + c2 * i * i) % capacity;
+        tmp = (index + q_probing(i)) % capacity;
 
         if (ht->entries[tmp] == NULL)
             return NULL;

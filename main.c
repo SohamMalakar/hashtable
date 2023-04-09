@@ -18,7 +18,7 @@ int main(void)
 
     struct timespec ts;
     timespec_get(&ts, TIME_UTC);
-    
+
     srand(ts.tv_nsec);
 
     while (fscanf(fp, "%s", str) == 1)
