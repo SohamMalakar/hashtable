@@ -91,6 +91,7 @@ Hashtable *init_hashtable(uint64_t capacity)
     ht->count = 0;
     ht->deleted = 0;
     ht->capacity = capacity;
+
     ht->entries = calloc(sizeof(void *), capacity);
 
     if (ht->entries == NULL)
@@ -115,8 +116,10 @@ void free_hashtable(Hashtable *ht)
     }
 
     free(ht->entries);
+
     ht->capacity = 0;
     ht->count = 0;
+
     free(ht);
 }
 
@@ -130,10 +133,13 @@ static void hashtable_resize(Hashtable *ht, uint64_t *capacity, float multiplier
             hashtable_insert(ht->entries[i], new_ht);
 
     free(ht->entries);
+    
     *capacity = ht->capacity = new_capacity;
+
     ht->count = new_ht->count;
     ht->entries = new_ht->entries;
     ht->deleted = 0;
+
     free(new_ht);
 }
 

@@ -16,7 +16,10 @@ int main(void)
 
     FILE *fp = fopen("words.txt", "r");
 
-    srand(time(NULL));
+    struct timespec ts;
+    timespec_get(&ts, TIME_UTC);
+    
+    srand(ts.tv_nsec);
 
     while (fscanf(fp, "%s", str) == 1)
         count += hashtable_insert(new_entry(str, rand()), ht);
