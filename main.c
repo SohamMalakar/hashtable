@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "hashtable.h"
@@ -22,19 +23,19 @@ int main(void)
     srand(ts.tv_nsec);
 
     while (fscanf(fp, "%s", str) == 1)
-        count += hashtable_insert(new_entry(str, rand()), ht);
+        count += hashtable_insert(new_entry(str, strlen(str), rand()), ht);
 
     printf("Number of successful insertion: %lu\n", count);
 
     rewind(fp);
 
     while (fscanf(fp, "%s", str) == 1)
-        assert(hashtable_lookup(str, ht) != NULL);
+        assert(hashtable_lookup(str, strlen(str), ht) != NULL);
 
     rewind(fp);
 
     while (fscanf(fp, "%s", str) == 1)
-        free_entry(hashtable_delete(str, ht));
+        free_entry(hashtable_delete(str, strlen(str), ht));
 
     fclose(fp);
     free_hashtable(ht);
