@@ -7,7 +7,7 @@
 typedef struct _Entry Entry;
 typedef struct _Hashtable Hashtable;
 
-Entry *new_entry(const void *key, size_t size, int value);
+Entry *new_entry(const void *key, size_t size, void *value, size_t vsize);
 void free_entry(Entry *entry);
 
 Hashtable *init_hashtable(uint64_t capacity);

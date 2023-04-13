@@ -22,8 +22,13 @@ int main(void)
 
     srand(ts.tv_nsec);
 
+    int _rand;
+
     while (fscanf(fp, "%s", str) == 1)
-        count += hashtable_insert(new_entry(str, strlen(str), rand()), ht);
+    {
+        _rand = rand();
+        count += hashtable_insert(new_entry(str, strlen(str), &_rand, sizeof(_rand)), ht);
+    }
 
     printf("Number of successful insertion: %lu\n", count);
 

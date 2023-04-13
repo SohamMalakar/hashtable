@@ -15,7 +15,8 @@ struct _Entry
 {
     void *key;
     size_t size;
-    int value;
+    void *value;
+    size_t vsize;
 };
 
 struct _Hashtable
@@ -26,7 +27,7 @@ struct _Hashtable
     Entry **entries;
 };
 
-Entry *new_entry(const void *key, size_t size, int value)
+Entry *new_entry(const void *key, size_t size, void *value, size_t vsize)
 {
     Entry *_new = malloc(sizeof(Entry));
 
@@ -46,7 +47,16 @@ Entry *new_entry(const void *key, size_t size, int value)
 
     memcpy(_new->key, key, size);
     _new->size = size;
-    _new->value = value;
+
+    _new->value = malloc(vsize);
+
+    if (_new->value == NULL)
+    {
+        fprintf(stderr, "out of memory!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(_new->value, value, vsize);
     return _new;
 }
 
@@ -55,6 +65,7 @@ void free_entry(Entry *entry)
     if (entry == NULL)
         return;
     free(entry->key);
+    free(entry->value);
     free(entry);
 }
 
