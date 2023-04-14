@@ -13,7 +13,8 @@ int main(void)
     char str[256];
     uint64_t count = 0;
 
-    Hashtable *ht = init_hashtable(INIT_HASHTABLE_SIZE);
+    // use the FNV-1a hash function by default
+    Hashtable *ht = init_hashtable(INIT_HASHTABLE_SIZE, NULL);
 
     FILE *fp = fopen("words.txt", "r");
 

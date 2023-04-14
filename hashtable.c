@@ -24,6 +24,7 @@ struct _Hashtable
     uint64_t count;
     uint64_t capacity;
     uint64_t deleted;
+    hashfunc *hash;
     Entry **entries;
 };
 
@@ -87,7 +88,7 @@ static uint64_t hash(const void *key, size_t size)
     return hash_value;
 }
 
-Hashtable *init_hashtable(uint64_t capacity)
+Hashtable *init_hashtable(uint64_t capacity, hashfunc *hf)
 {
     Hashtable *ht = malloc(sizeof(Hashtable));
 
@@ -109,6 +110,7 @@ Hashtable *init_hashtable(uint64_t capacity)
         exit(EXIT_FAILURE);
     }
 
+    ht->hash = hf ? hf : hash;
     return ht;
 }
 
@@ -136,7 +138,7 @@ void free_hashtable(Hashtable *ht)
 static void hashtable_resize(Hashtable *ht, uint64_t *capacity, float multiplier)
 {
     uint64_t new_capacity = *capacity * multiplier;
-    Hashtable *new_ht = init_hashtable(new_capacity);
+    Hashtable *new_ht = init_hashtable(new_capacity, ht->hash);
 
     for (uint64_t i = 0; i < *capacity; i++)
         if (ht->entries[i] != NULL && ht->entries[i] != DELETED)
@@ -163,7 +165,7 @@ uint64_t q_probing(uint64_t x)
 bool hashtable_insert(Entry *object, Hashtable *ht)
 {
     uint64_t capacity = ht->capacity;
-    uint64_t index = hash(object->key, object->size);
+    uint64_t index = ht->hash(object->key, object->size);
     uint64_t tmp;
 
     // grow the hashtable
@@ -201,7 +203,7 @@ bool hashtable_insert(Entry *object, Hashtable *ht)
 Entry *hashtable_delete(const void *key, size_t size, Hashtable *ht)
 {
     uint64_t capacity = ht->capacity;
-    uint64_t index = hash(key, size);
+    uint64_t index = ht->hash(key, size);
     uint64_t tmp;
 
     // shrink the hashtable
@@ -232,7 +234,7 @@ Entry *hashtable_delete(const void *key, size_t size, Hashtable *ht)
 Entry *hashtable_lookup(const void *key, size_t size, Hashtable *ht)
 {
     uint64_t capacity = ht->capacity;
-    uint64_t index = hash(key, size);
+    uint64_t index = ht->hash(key, size);
     uint64_t tmp;
 
     for (uint64_t i = 0; i < capacity; i++)
