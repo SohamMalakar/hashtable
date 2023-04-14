@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "hashtable.h"
+#include "murmur3_64.h"
 
 #define INIT_HASHTABLE_SIZE 8
 
@@ -14,7 +15,7 @@ int main(void)
     uint64_t count = 0;
 
     // use the FNV-1a hash function by default
-    Hashtable *ht = init_hashtable(INIT_HASHTABLE_SIZE, NULL);
+    Hashtable *ht = init_hashtable(INIT_HASHTABLE_SIZE, hash);
 
     FILE *fp = fopen("words.txt", "r");
 
